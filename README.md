@@ -1,1 +1,263 @@
-# candy-crush
+#include <iostream>
+#include <vector>
+#include <cstdlib>
+using namespace std;
+
+
+void clearScreen () {
+    cout << "\033[H\033[2J";
+}
+
+const unsigned KReset   (0);
+const unsigned KNoir    (30);
+const unsigned KRouge   (31);
+const unsigned KVert    (32);
+const unsigned KJaune   (33);
+const unsigned KBleu    (34);
+const unsigned KMAgenta (35);
+const unsigned KCyan    (36);
+const unsigned KImpossible = 0;
+
+void couleur (const unsigned & coul) {
+    cout << "\033[" << coul <<"m";
+}
+
+
+typedef vector <unsigned> line;
+typedef vector <line> mat;
+struct maPosition {
+    unsigned abs;
+    unsigned ord;
+};
+
+int KNbCandies = 9;
+
+void initGrid(mat &grid, const size_t &matSize) {
+    grid.resize(matSize);
+    for (size_t i = 0; i < matSize; i++) {
+        grid[i].resize(matSize);
+        for (size_t j = 0; j < matSize; j++) {
+            grid[i][j] = rand() % KNbCandies + 1;
+        }
+    }
+}
+
+
+void displayGrid(const mat &grid, const size_t &matSize) {
+    clearScreen ();
+
+    for (size_t i = 0; i < matSize; i++) {
+        cout << i << " | ";
+        for (size_t j = 0; j < matSize; j++) {
+            switch (grid[i][j]) {
+            case 1: couleur(KRouge); break;
+            case 2: couleur(KVert); break;
+            case 3: couleur(KBleu); break;
+            case 4: couleur(KJaune); break;
+            case 5: couleur(KMAgenta); break;
+            case 6: couleur(KCyan); break;
+            }
+            cout << grid[i][j] << " ";
+        }
+        couleur(KReset);
+        cout << endl;
+    }
+
+    cout << "  --";
+    for (size_t j = 0; j < matSize; j++) {
+        cout << "--";
+    }
+    cout << endl << "    ";
+    for (size_t j = 0; j < matSize; j++) {
+        cout << j << " ";
+    }
+    cout << endl;
+}
+
+
+void makeAMove (mat & grid, const maPosition & pos, const char & direction) {
+
+    unsigned i_base = pos.abs;
+    unsigned j_base = pos.ord;
+
+    unsigned i_destination = i_base;
+    unsigned j_destination = j_base;
+
+    switch (direction) {
+    case 'Z':
+        if (i_base == 0) return;
+        i_destination = i_base - 1;
+        break;
+
+    case 'S':
+        i_destination = i_base + 1;
+        break;
+
+    case 'Q':
+        if (j_base == 0) return;
+        j_destination = j_base - 1;
+        break;
+
+    case 'D':
+        j_destination = j_base + 1;
+        break;
+    }
+
+    swap(grid[i_base][j_base], grid[i_destination][j_destination]);
+}
+
+
+bool atLeastThreeInAColumn (const mat & grid, maPosition & pos, unsigned & howMany) {
+    size_t matSize = grid.size();
+
+    for (size_t j = 0; j < matSize; ++j) {
+        for (size_t i = 0; i < matSize - 2; ++i) {
+            unsigned val = grid[i][j];
+            if (val != KImpossible && grid[i + 1][j] == val && grid[i + 2][j] == val) {
+
+                unsigned compteur = 3;
+
+                for (size_t k = i + 3; k < matSize; ++k) {
+                    if (grid[k][j] == val) {
+                        compteur++;
+                    } else {
+                        break;
+                    }
+                }
+
+                pos.abs = i;
+                pos.ord = j;
+                howMany = compteur;
+
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool atLeastThreeInARow (const mat & grid, maPosition & pos, unsigned & howMany) {
+    size_t matSize = grid.size();
+    for (size_t i = 0; i < matSize; ++i) {
+        for (size_t j = 0; j < matSize - 2; ++j) {
+            unsigned val = grid[i][j];
+            if (val != KImpossible && grid[i][j + 1] == val && grid[i][j + 2] == val) {
+
+                unsigned compteur = 3;
+
+                for (size_t k = j + 3; k < matSize; ++k) {
+                    if (grid[i][k] == val) {
+                        compteur++;
+                    } else {
+                        break;
+                    }
+                }
+
+                pos.abs = i;
+                pos.ord = j;
+                howMany = compteur;
+
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+void removalInColumn (mat & grid, const maPosition & pos, unsigned howMany) {
+
+    const unsigned KImpossible = 0;
+    unsigned ligne_depart = pos.abs;
+    unsigned colonne = pos.ord;
+
+    size_t matSize = grid.size();
+
+    for (size_t i = ligne_depart + howMany; i < matSize; ++i) {
+        grid[i - howMany][colonne] = grid[i][colonne];
+    }
+
+    for (size_t i = matSize - howMany; i < matSize; ++i) {
+        grid[i][colonne] = KImpossible;
+    }
+
+    for (size_t i = 0; i < matSize; ++i) {
+        if (grid[i][colonne] == KImpossible) {
+            grid[i][colonne] = rand() % KNbCandies + 1;
+        }
+    }
+}
+
+
+void removalInRow(mat & grid, const maPosition & pos, unsigned howMany) {
+    const unsigned KImpossible = 0;
+
+    for (size_t j = pos.ord; j < pos.ord + howMany; ++j) {
+        grid[pos.abs][j] = KImpossible;
+    }
+    for (size_t j = pos.ord; j < pos.ord + howMany; ++j) {
+        for (size_t i = pos.abs; i > 0; --i) {
+            if (grid[i][j] == KImpossible) {
+                for (size_t k = i; k > 0; --k) {
+                    grid[k][j] = grid[k-1][j];
+                }
+                grid[0][j] = KImpossible;
+            }
+        }
+
+        if (grid[0][j] == KImpossible) {
+            grid[0][j] = rand() % KNbCandies + 1;
+        }
+    }
+}
+
+
+int main()
+{
+    couleur (KRouge);
+    cout << "Candy" << endl;
+    couleur (KVert);
+    cout << "Crush" << endl;
+    couleur (KReset);
+    cout << "pour jouer, entrer ZQSD, Z pour se deplacer en haut, Q pour se deplacer a gauche, S pour se deplacer vers le bas, D pour aller vers la droite" << endl;
+
+    srand(time(0));
+    size_t t_grille = 5;
+    mat mat_grille;
+
+    initGrid(mat_grille, t_grille);
+
+    unsigned i_abs, j_ord;
+    char direction;
+    bool jeu = true;
+    maPosition pos_match;
+    unsigned nb_match;
+
+    while (jeu) {
+        displayGrid(mat_grille, t_grille);
+
+        cout << "\nEntrez [Ligne] [Colonne] [Direction (ZSQD)]  ";
+        cin >> i_abs >> j_ord >> direction;
+
+        maPosition pos = {i_abs, j_ord};
+        makeAMove(mat_grille, pos, direction);
+
+        bool encore;
+        do {
+            encore = false;
+            if (atLeastThreeInAColumn(mat_grille, pos_match, nb_match)) {
+                removalInColumn(mat_grille, pos_match, nb_match);
+                cout << "\n Colonne! " << nb_match << " supprimés. \n";
+                encore = true;
+            } else if (atLeastThreeInARow(mat_grille, pos_match, nb_match)) {
+                removalInRow(mat_grille, pos_match, nb_match);
+                cout << "\n Ligne! " << nb_match << " supprimés. \n";
+                encore = true;
+            }
+        } while (encore);
+    }
+
+    couleur(KReset);
+    return 0;
+}
