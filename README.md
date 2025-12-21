@@ -1,4 +1,4 @@
-Candy Crush en C++
+**Candy Crush en C++**
 
 Ce projet est une version simplifier su jeu "Candy Crush", développer en C++
 Le but de ce jeu est d'aligner au moins 3 Bonbons de la même couleur pour les faire disparaître et marquer des points.
