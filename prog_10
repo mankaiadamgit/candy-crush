@@ -215,22 +215,41 @@ void removalInRow(mat & grid, const maPosition & pos, unsigned howMany) {
 }
 unsigned score = 0;
 
-void lireScore(const string & scores.txt) {
-    ifstream fichier(scores.txt);
+void lireScore(const string & filename) {
+    ifstream fichier(filename);
     if (fichier) {
         fichier >> score;
         fichier.close();
     }
 }
 
-void sauvegarderScore(const string & scores.txt) {
-    ofstream fichier(scores.txt);
+void sauvegarderScore(const string & filename) {
+    ofstream fichier(filename);
     if (fichier) {
         fichier << score;
         fichier.close();
     }
 }
 
+void meilleurScore(const string & filename, const unsigned & nouveauScore) {
+    unsigned ancienActuel = 0;
+
+    ifstream fichierLecture(filename);
+    if (fichierLecture) {
+        fichierLecture >> ancienActuel;
+        fichierLecture.close();
+    }
+
+    if (nouveauScore > ancienActuel) {
+        ofstream fichierEcriture(filename);
+        if (fichierEcriture) {
+            fichierEcriture << nouveauScore;
+            cout << "Nouveau meilleur score: " << nouveauScore << "!" << endl;
+            } else {
+                cout << "Meilleur score actuel: " << ancienActuel << endl;
+        }
+    }
+}
 
 void introduction() {
     couleur(KRouge);
@@ -254,7 +273,6 @@ int main()
 
     lireScore("scores.txt");
     cout << "Votre score est de : " << score << endl;
-    sauvegarderScore("scores.txt");
 
 
     couleur (KRouge);
@@ -282,6 +300,12 @@ int main()
         cout << "\nEntrez [Ligne] [Colonne] [Direction (ZSQD)]  ";
         cin >> i_abs >> j_ord >> direction;
 
+        if (direction == 'X') {
+            jeu = false;
+            cout << "Merci d'avoir joué! Votre score final est de " << score << " points." << endl;
+            break;
+        }
+
         maPosition pos = {i_abs, j_ord};
         makeAMove(mat_grille, pos, direction);
 
@@ -299,6 +323,9 @@ int main()
             }
         } while (encore);
     }
+
+    sauvegarderScore("scores.txt");
+    meilleurScore("score.txt", score);
 
     couleur(KReset);
     return 0;
