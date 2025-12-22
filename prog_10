@@ -1,8 +1,12 @@
-// Candy Crush like game in C++
+
+
+
 #include <iostream>
 #include <vector>
 #include <cstdlib>
 #include <fstream>
+#include <ctime>
+
 using namespace std;
 
 
@@ -10,20 +14,19 @@ void clearScreen () {
     cout << "\033[H\033[2J";
 }
 
-const unsigned KReset   (0);
-const unsigned KNoir    (30);
-const unsigned KRouge   (31);
-const unsigned KVert    (32);
-const unsigned KJaune   (33);
-const unsigned KBleu    (34);
-const unsigned KMAgenta (35);
-const unsigned KCyan    (36);
+const unsigned KReset    (0);
+const unsigned KNoir     (30);
+const unsigned KRouge    (31);
+const unsigned KVert     (32);
+const unsigned KJaune    (33);
+const unsigned KBleu     (34);
+const unsigned KMAgenta  (35);
+const unsigned KCyan     (36);
 const unsigned KImpossible = 0;
 
 void couleur (const unsigned & coul) {
     cout << "\033[" << coul <<"m";
 }
-
 
 typedef vector <unsigned> line;
 typedef vector <line> mat;
@@ -32,7 +35,7 @@ struct maPosition {
     unsigned ord;
 };
 
-int KNbCandies = 9;
+int KNbCandies = 5;
 
 void initGrid(mat &grid, const size_t &matSize) {
     grid.resize(matSize);
@@ -45,19 +48,51 @@ void initGrid(mat &grid, const size_t &matSize) {
 }
 
 
-void displayGrid(const mat &grid, const size_t &matSize) {
+void displayGrid(const mat &grid, const size_t &matSize, bool pvp, int score1, int score2, bool tourJ1, int coupsJ1, int coupsJ2) {
     clearScreen ();
+
+    if (pvp) {
+        couleur(KJaune); cout << " MODE PVP (5 coups chacun) " << endl;
+        couleur(KRouge); cout << "J1: " << score1 << " pts (" << coupsJ1 << "/5 coups)";
+        couleur(KReset); cout << " | ";
+        couleur(KVert);  cout << "J2: " << score2 << " pts (" << coupsJ2 << "/5 coups)" << endl;
+        couleur(KReset);
+        cout << "C'est au tour de : ";
+
+        if (tourJ1 == true) {
+            cout << "JOUEUR 1";
+        } else {
+            cout << "JOUEUR 2";
+        }
+
+        cout << endl << endl;
+    } else {
+        couleur(KCyan); cout << " MODE SOLO (INFINI) " << endl;
+        couleur(KRouge); cout << "Score actuel : " << score1 << endl;
+        couleur(KReset);
+    }
 
     for (size_t i = 0; i < matSize; i++) {
         cout << i << " | ";
         for (size_t j = 0; j < matSize; j++) {
             switch (grid[i][j]) {
-            case 1: couleur(KRouge); break;
-            case 2: couleur(KVert); break;
-            case 3: couleur(KBleu); break;
-            case 4: couleur(KJaune); break;
-            case 5: couleur(KMAgenta); break;
-            case 6: couleur(KCyan); break;
+            case 1: couleur(KRouge);
+                break;
+
+            case 2: couleur(KVert);
+                break;
+
+            case 3: couleur(KBleu);
+                break;
+
+            case 4: couleur(KJaune);
+                break;
+
+            case 5: couleur(KMAgenta);
+                break;
+
+            case 6: couleur(KCyan);
+                break;
             }
             cout << grid[i][j] << " ";
         }
@@ -76,49 +111,41 @@ void displayGrid(const mat &grid, const size_t &matSize) {
     cout << endl;
 }
 
-
 void makeAMove (mat & grid, const maPosition & pos, const char & direction) {
-
     unsigned i_base = pos.abs;
     unsigned j_base = pos.ord;
+
 
     unsigned i_destination = i_base;
     unsigned j_destination = j_base;
 
     switch (direction) {
-    case 'Z':
-        if (i_base == 0) return;
-        i_destination = i_base - 1;
+    case 'Z': i_destination = i_base - 1;
         break;
 
-    case 'S':
-        i_destination = i_base + 1;
+    case 'S': i_destination = i_base + 1;
         break;
 
-    case 'Q':
-        if (j_base == 0) return;
-        j_destination = j_base - 1;
+    case 'A': j_destination = j_base - 1;
         break;
 
-    case 'D':
-        j_destination = j_base + 1;
+    case 'E': j_destination = j_base + 1;
         break;
     }
 
-    swap(grid[i_base][j_base], grid[i_destination][j_destination]);
-}
+
+        swap(grid[i_base][j_base], grid[i_destination][j_destination]);
+    }
 
 
 bool atLeastThreeInAColumn (const mat & grid, maPosition & pos, unsigned & howMany) {
     size_t matSize = grid.size();
-
     for (size_t j = 0; j < matSize; ++j) {
         for (size_t i = 0; i < matSize - 2; ++i) {
             unsigned val = grid[i][j];
+
             if (val != KImpossible && grid[i + 1][j] == val && grid[i + 2][j] == val) {
-
                 unsigned compteur = 3;
-
                 for (size_t k = i + 3; k < matSize; ++k) {
                     if (grid[k][j] == val) {
                         compteur++;
@@ -126,16 +153,13 @@ bool atLeastThreeInAColumn (const mat & grid, maPosition & pos, unsigned & howMa
                         break;
                     }
                 }
-
                 pos.abs = i;
                 pos.ord = j;
                 howMany = compteur;
-
                 return true;
             }
         }
     }
-
     return false;
 }
 
@@ -145,9 +169,7 @@ bool atLeastThreeInARow (const mat & grid, maPosition & pos, unsigned & howMany)
         for (size_t j = 0; j < matSize - 2; ++j) {
             unsigned val = grid[i][j];
             if (val != KImpossible && grid[i][j + 1] == val && grid[i][j + 2] == val) {
-
                 unsigned compteur = 3;
-
                 for (size_t k = j + 3; k < matSize; ++k) {
                     if (grid[i][k] == val) {
                         compteur++;
@@ -155,11 +177,9 @@ bool atLeastThreeInARow (const mat & grid, maPosition & pos, unsigned & howMany)
                         break;
                     }
                 }
-
                 pos.abs = i;
                 pos.ord = j;
                 howMany = compteur;
-
                 return true;
             }
         }
@@ -167,23 +187,18 @@ bool atLeastThreeInARow (const mat & grid, maPosition & pos, unsigned & howMany)
     return false;
 }
 
-
 void removalInColumn (mat & grid, const maPosition & pos, unsigned howMany) {
-
     const unsigned KImpossible = 0;
-    unsigned ligne_depart = pos.abs;
+    unsigned ligne = pos.abs;
     unsigned colonne = pos.ord;
-
     size_t matSize = grid.size();
 
-    for (size_t i = ligne_depart + howMany; i < matSize; ++i) {
+    for (size_t i = ligne + howMany; i < matSize; ++i) {
         grid[i - howMany][colonne] = grid[i][colonne];
     }
-
     for (size_t i = matSize - howMany; i < matSize; ++i) {
         grid[i][colonne] = KImpossible;
     }
-
     for (size_t i = 0; i < matSize; ++i) {
         if (grid[i][colonne] == KImpossible) {
             grid[i][colonne] = rand() % KNbCandies + 1;
@@ -191,10 +206,8 @@ void removalInColumn (mat & grid, const maPosition & pos, unsigned howMany) {
     }
 }
 
-
 void removalInRow(mat & grid, const maPosition & pos, unsigned howMany) {
     const unsigned KImpossible = 0;
-
     for (size_t j = pos.ord; j < pos.ord + howMany; ++j) {
         grid[pos.abs][j] = KImpossible;
     }
@@ -207,12 +220,13 @@ void removalInRow(mat & grid, const maPosition & pos, unsigned howMany) {
                 grid[0][j] = KImpossible;
             }
         }
-
         if (grid[0][j] == KImpossible) {
             grid[0][j] = rand() % KNbCandies + 1;
         }
     }
 }
+
+
 unsigned score = 0;
 
 void lireScore(const string & filename) {
@@ -269,23 +283,26 @@ void introduction() {
 
 int main()
 {
-    introduction();
+     introduction();
 
     lireScore("scores.txt");
     cout << "Votre score est de : " << score << endl;
-
-
-    couleur (KRouge);
-    cout << "Candy" << endl;
-    couleur (KVert);
-    cout << "Crush" << endl;
-    couleur (KReset);
-    cout << "pour jouer, entrer ZQSD, Z pour se deplacer en haut, Q pour se deplacer a gauche, S pour se deplacer vers le bas, D pour aller vers la droite" << endl;
-
     srand(time(0));
+
+    int mode;
+    cout << "CHOISISSEZ LE MODE DE JEU :" << endl;
+    cout << "1. Mode Solo (Infini)" << endl;
+    cout << "2. Mode PvP (5 coups chacun)" << endl;
+    cout << "Votre choix : ";
+    cin >> mode;
+
+    bool estPvP = (mode == 2);
+    int scoreJ1 = 0, scoreJ2 = 0;
+    int coupsJ1 = 0, coupsJ2 = 0;
+    bool tourJoueur1 = true;
+
     size_t t_grille = 5;
     mat mat_grille;
-
     initGrid(mat_grille, t_grille);
 
     unsigned i_abs, j_ord;
@@ -295,38 +312,53 @@ int main()
     unsigned nb_match;
 
     while (jeu) {
-        displayGrid(mat_grille, t_grille);
 
-        cout << "\nEntrez [Ligne] [Colonne] [Direction (ZSQD)]  ";
-        cin >> i_abs >> j_ord >> direction;
+        displayGrid(mat_grille, t_grille, estPvP, scoreJ1, scoreJ2, tourJoueur1, coupsJ1, coupsJ2);
 
-        if (direction == 'X') {
-            jeu = false;
-            cout << "Merci d'avoir joué! Votre score final est de " << score << " points." << endl;
-            break;
+
+        if (estPvP && coupsJ1 >= 5 && coupsJ2 >= 5) {
+            if (scoreJ1 > scoreJ2) cout << "VICTOIRE DU JOUEUR 1 !" << endl;
+            else if (scoreJ2 > scoreJ1) cout << "VICTOIRE DU JOUEUR 2 !" << endl;
+            else cout << "EGALITE !" << endl;
         }
+
+        cout << "\nEntrez [Ligne] [Colonne] [Direction (AZES)]  ";
+        cin >> i_abs >> j_ord >> direction;
 
         maPosition pos = {i_abs, j_ord};
         makeAMove(mat_grille, pos, direction);
+
+        if (estPvP) {
+            if (tourJoueur1) coupsJ1++;
+            else coupsJ2++;
+        }
 
         bool encore;
         do {
             encore = false;
             if (atLeastThreeInAColumn(mat_grille, pos_match, nb_match)) {
                 removalInColumn(mat_grille, pos_match, nb_match);
-                cout << "\n Colonne! " << nb_match << " supprimés. \n";
+
+                if (tourJoueur1) scoreJ1 += nb_match * 2;
+                else scoreJ2 += nb_match * 2;
                 encore = true;
             } else if (atLeastThreeInARow(mat_grille, pos_match, nb_match)) {
                 removalInRow(mat_grille, pos_match, nb_match);
-                cout << "\n Ligne! " << nb_match << " supprimés. \n";
+
+                if (tourJoueur1) scoreJ1 += nb_match * 2;
+                else scoreJ2 += nb_match * 2;
                 encore = true;
             }
         } while (encore);
+
+        if (estPvP) {
+            tourJoueur1 = !tourJoueur1;
+        }
     }
 
     sauvegarderScore("scores.txt");
     meilleurScore("score.txt", score);
 
-    couleur(KReset);
     return 0;
 }
+
