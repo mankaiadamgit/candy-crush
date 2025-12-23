@@ -131,8 +131,8 @@ void makeAMove (mat & grid, const maPosition & pos, const char & direction) {
     }
 
 
-        swap(grid[i_base][j_base], grid[i_destination][j_destination]);
-    }
+    swap(grid[i_base][j_base], grid[i_destination][j_destination]);
+}
 
 
 bool atLeastThreeInAColumn (const mat & grid, maPosition & pos, unsigned & howMany) {
@@ -256,8 +256,8 @@ void meilleurScore(const string & filename, const unsigned & nouveauScore) {
         if (fichierEcriture) {
             fichierEcriture << nouveauScore;
             cout << "Nouveau meilleur score: " << nouveauScore << "!" << endl;
-            } else {
-                cout << "Meilleur score actuel: " << ancienActuel << endl;
+        } else {
+            cout << "Meilleur score actuel: " << ancienActuel << endl;
         }
     }
 }
@@ -268,19 +268,19 @@ void introduction() {
     couleur(KVert);
     cout << "Le but du jeu est d'aligner au moins trois bonbons de la meme couleur pour les faire disparaitre et marquer des points.\n" << endl;
     couleur(KBleu);
-    cout << "Déplace un bonbon avec Z (haut), S (bas), Q (gauche), D (droite)\n" << endl;
+    cout << "Déplace un bonbon avec Z (haut), S (bas), A (gauche), E (droite)\n" << endl;
     couleur(KJaune);
-    cout << "Chaque bonbon supprimé rapporte un point.\n" << endl;
+    cout << "Chaque bonbon supprime rapporte un point.\n" << endl;
     couleur(KReset);
     cout << "Amusez-vous bien!\n\n" << endl;
 
-    cout << "Appuyez sur Entrée pour commencer le jeu..." << endl;
+    cout << "Appuyez sur Entree pour commencer le jeu..." << endl;
     cin.ignore();
 }
 
 int main()
 {
-     introduction();
+    introduction();
 
     lireScore("scores.txt");
     cout << "Votre score est de : " << score << endl;
@@ -320,7 +320,9 @@ int main()
         }
 
         cout << "\nEntrez [Ligne] [Colonne] [Direction (AZES)]  ";
-        cin >> i_abs >> j_ord >> direction;
+        cin >> i_abs;
+        cin >> j_ord;
+        cin >> direction;
 
         maPosition pos = {i_abs, j_ord};
         makeAMove(mat_grille, pos, direction);
@@ -338,12 +340,14 @@ int main()
 
                 if (tourJoueur1) scoreJ1 += nb_match * 2;
                 else scoreJ2 += nb_match * 2;
+                cout << "\n Il y a  " << nb_match << "  bonbons supprimes. \n";
                 encore = true;
             } else if (atLeastThreeInARow(mat_grille, pos_match, nb_match)) {
                 removalInRow(mat_grille, pos_match, nb_match);
 
                 if (tourJoueur1) scoreJ1 += nb_match * 2;
                 else scoreJ2 += nb_match * 2;
+                cout << "\n il y a  " << nb_match << "  bonbons supprimes. \n";
                 encore = true;
             }
         } while (encore);
@@ -358,4 +362,3 @@ int main()
 
     return 0;
 }
-
