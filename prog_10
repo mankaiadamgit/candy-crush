@@ -131,8 +131,8 @@ void makeAMove (mat & grid, const maPosition & pos, const char & direction) {
     }
 
 
-    swap(grid[i_base][j_base], grid[i_destination][j_destination]);
-}
+        swap(grid[i_base][j_base], grid[i_destination][j_destination]);
+    }
 
 
 bool atLeastThreeInAColumn (const mat & grid, maPosition & pos, unsigned & howMany) {
@@ -256,11 +256,66 @@ void meilleurScore(const string & filename, const unsigned & nouveauScore) {
         if (fichierEcriture) {
             fichierEcriture << nouveauScore;
             cout << "Nouveau meilleur score: " << nouveauScore << "!" << endl;
-        } else {
-            cout << "Meilleur score actuel: " << ancienActuel << endl;
+            } else {
+                cout << "Meilleur score actuel: " << ancienActuel << endl;
         }
     }
 }
+
+// les niveaux
+void niveau1(mat & grille, size_t & taille) {
+    taille = 5;
+    initGrid(grille, taille);
+}
+
+void niveau2(mat & grille, size_t & taille) {
+    taille = 7;
+    initGrid(grille, taille);
+}
+
+void niveau3(mat & grille, size_t & taille) {
+    taille = 9;
+    initGrid(grille, taille);
+}
+
+unsigned objectifScore(int niveau) {
+    if (niveau == 1) {
+        return 40;
+    } else if (niveau == 2) {
+        return 100;
+    } else if (niveau == 3) {
+        return 150;
+    }
+    return 0;
+}
+
+
+void histoire(int niveau) {
+    clearScreen ();
+    couleur(KBleu);
+
+    if (niveau == 1) {
+        cout << "Niveau 1 : La Forêt Enchantée\n" << endl;
+        cout << "Vous entrez dans une forêt magique où les arbres sont faits de bonbons" << endl;
+        cout << "et les rivières coulent de chocolat. Votre mission est de libérer les créatures sucrées" << endl;
+        cout << "en alignant les bonbons et en récoltant des points." << endl;
+    } else if (niveau == 2) {
+        cout << "Niveau 2 : Le Château de Caramel\n" << endl;
+        cout << "Vous arrivez devant un château majestueux construit entièrement en caramel." << endl;
+        cout << "À l'intérieur, des énigmes sucrées vous attendent. Alignez les bonbons pour avancer" << endl;
+        cout << "et découvrir les secrets du château." << endl;
+    } else if (niveau == 3) {
+        cout << "Niveau 3 : L'Île des Délices\n" << endl;
+        cout << "Vous êtes sur une île paradisiaque où tout est fait de friandises." << endl;
+        cout << "Explorez les plages de sucre, les montagnes de gâteaux et les forêts de bonbons" << endl;
+        cout << "tout en accumulant des points en alignant les bonbons." << endl;
+    }
+    couleur(KReset);
+    cout << "\nAppuyez sur Entrée pour continuer..." << endl;   
+    cin.ignore();
+    cin.get();
+}
+
 
 void introduction() {
     couleur(KRouge);
@@ -268,13 +323,13 @@ void introduction() {
     couleur(KVert);
     cout << "Le but du jeu est d'aligner au moins trois bonbons de la meme couleur pour les faire disparaitre et marquer des points.\n" << endl;
     couleur(KBleu);
-    cout << "Déplace un bonbon avec Z (haut), S (bas), A (gauche), E (droite)\n" << endl;
+    cout << "Déplace un bonbon avec A (haut), S (bas), A (gauche), E (droite)\n" << endl;
     couleur(KJaune);
-    cout << "Chaque bonbon supprime rapporte un point.\n" << endl;
+    cout << "Chaque bonbon supprimé rapporte un point.\n" << endl;
     couleur(KReset);
     cout << "Amusez-vous bien!\n\n" << endl;
 
-    cout << "Appuyez sur Entree pour commencer le jeu..." << endl;
+    cout << "Appuyez sur Entrée pour commencer le jeu..." << endl;
     cin.ignore();
 }
 
@@ -285,6 +340,19 @@ int main()
     lireScore("scores.txt");
     cout << "Votre score est de : " << score << endl;
     srand(time(0));
+
+    int niveau = 1;
+    mat mat_grille;
+    size_t t_grille;
+    histoire(niveau);
+
+    if (niveau == 1) {
+        niveau1(mat_grille, t_grille);
+    } else if (niveau == 2) {
+        niveau2(mat_grille, t_grille);
+    } else if (niveau == 3) {
+        niveau3(mat_grille, t_grille);
+    }
 
     int mode;
     cout << "CHOISISSEZ LE MODE DE JEU :" << endl;
@@ -298,9 +366,9 @@ int main()
     int coupsJ1 = 0, coupsJ2 = 0;
     bool tourJoueur1 = true;
 
-    size_t t_grille = 5;
-    mat mat_grille;
-    initGrid(mat_grille, t_grille);
+    //size_t t_grille = 5;
+    //mat mat_grille;
+    //initGrid(mat_grille, t_grille);
 
     unsigned i_abs, j_ord;
     char direction;
@@ -320,9 +388,7 @@ int main()
         }
 
         cout << "\nEntrez [Ligne] [Colonne] [Direction (AZES)]  ";
-        cin >> i_abs;
-        cin >> j_ord;
-        cin >> direction;
+        cin >> i_abs >> j_ord >> direction;
 
         maPosition pos = {i_abs, j_ord};
         makeAMove(mat_grille, pos, direction);
@@ -340,17 +406,36 @@ int main()
 
                 if (tourJoueur1) scoreJ1 += nb_match * 2;
                 else scoreJ2 += nb_match * 2;
-                cout << "\n Il y a  " << nb_match << "  bonbons supprimes. \n";
                 encore = true;
             } else if (atLeastThreeInARow(mat_grille, pos_match, nb_match)) {
                 removalInRow(mat_grille, pos_match, nb_match);
 
                 if (tourJoueur1) scoreJ1 += nb_match * 2;
                 else scoreJ2 += nb_match * 2;
-                cout << "\n il y a  " << nb_match << "  bonbons supprimes. \n";
                 encore = true;
             }
         } while (encore);
+
+        unsigned objectif = objectifScore(niveau);
+        if (!estPvP && scoreJ1 >= objectif) {
+            cout << "FELICITATIONS ! Vous avez atteint l'objectif de " << objectif << " points ! Niveau " << niveau << " terminé" << endl;
+            niveau++;
+            if (niveau > 3) {
+                cout << "Vous avez terminé tous les niveaux ! Bravo !" << endl;
+                jeu = false;
+                break;
+            } 
+            histoire(niveau);
+            
+            if (niveau == 1) {
+                niveau1(mat_grille, t_grille);
+            } else if (niveau == 2) {
+                niveau2(mat_grille, t_grille);
+            } else if (niveau == 3) {
+                niveau3(mat_grille, t_grille);
+            }
+            continue;
+        }
 
         if (estPvP) {
             tourJoueur1 = !tourJoueur1;
@@ -358,7 +443,8 @@ int main()
     }
 
     sauvegarderScore("scores.txt");
-    meilleurScore("score.txt", score);
+    meilleurScore("score.txt", scoreJ1);
 
     return 0;
 }
+
