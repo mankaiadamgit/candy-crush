@@ -323,7 +323,7 @@ void introduction() {
     couleur(KVert);
     cout << "Le but du jeu est d'aligner au moins trois bonbons de la meme couleur pour les faire disparaitre et marquer des points.\n" << endl;
     couleur(KBleu);
-    cout << "Déplace un bonbon avec A (haut), S (bas), A (gauche), E (droite)\n" << endl;
+    cout << "Déplace un bonbon avec Z (haut), S (bas), A (gauche), E (droite)\n" << endl;
     couleur(KJaune);
     cout << "Chaque bonbon supprimé rapporte un point.\n" << endl;
     couleur(KReset);
@@ -441,9 +441,12 @@ int main()
             tourJoueur1 = !tourJoueur1;
         }
     }
+    cout << "Score sauvegardé dans le fichier : ";
+    lireScore("scores.txt");
+    cout << score << endl;
 
     sauvegarderScore("scores.txt");
-    meilleurScore("score.txt", scoreJ1);
+    meilleurScore("scores.txt", scoreJ1);
 
     return 0;
 }
