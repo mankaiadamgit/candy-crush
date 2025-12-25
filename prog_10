@@ -12,13 +12,13 @@ void clearScreen () {
 }
 
 const unsigned KReset    (0);
-const unsigned KNoir     (30);
-const unsigned KRouge    (31);
-const unsigned KVert     (32);
-const unsigned KJaune    (33);
-const unsigned KBleu     (34);
-const unsigned KMAgenta  (35);
-const unsigned KCyan     (36);
+const unsigned KNoir      (30);
+const unsigned KRouge     (31);
+const unsigned KVert      (32);
+const unsigned KJaune     (33);
+const unsigned KBleu      (34);
+const unsigned KMAgenta   (35);
+const unsigned KCyan      (36);
 const unsigned KImpossible = 0;
 
 void couleur (const unsigned & coul) {
@@ -32,7 +32,7 @@ struct maPosition {
     unsigned ord;
 };
 
-int KNbCandies = 5;
+int KNbCandies = 6;
 
 void initGrid(mat &grid, const size_t &matSize) {
     grid.resize(matSize);
@@ -45,24 +45,40 @@ void initGrid(mat &grid, const size_t &matSize) {
 }
 
 
-void displayGrid(const mat &grid, const size_t &matSize, bool pvp, int score1, int score2, bool tourJ1, int coupsJ1, int coupsJ2) {
+void modePvp (unsigned int score1, unsigned int score2, bool tourJ1, unsigned int coupsJ1, unsigned int coupsJ2) {
+    couleur(KJaune); cout << " MODE PVP (5 coups chacun) " << endl;
+    couleur(KRouge); cout << "J1: " << score1 << " pts (" << coupsJ1 << "/5 coups)";
+    couleur(KReset); cout << " | ";
+    couleur(KVert);  cout << "J2: " << score2 << " pts (" << coupsJ2 << "/5 coups)" << endl;
+    couleur(KReset);
+    cout << "C'est au tour de : ";
+
+    if (tourJ1 == true) {
+        cout << "JOUEUR 1";
+    } else {
+        cout << "JOUEUR 2";
+    }
+
+    cout << endl << endl;
+}
+
+
+void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int score1,unsigned int score2, bool tourJ1,unsigned int coupsJ1,unsigned int coupsJ2, bool histoire, unsigned int niveau, unsigned objectif, bool hardcore, int coupsRestants) {
     clearScreen ();
 
     if (pvp) {
-        couleur(KJaune); cout << " MODE PVP (5 coups chacun) " << endl;
-        couleur(KRouge); cout << "J1: " << score1 << " pts (" << coupsJ1 << "/5 coups)";
-        couleur(KReset); cout << " | ";
-        couleur(KVert);  cout << "J2: " << score2 << " pts (" << coupsJ2 << "/5 coups)" << endl;
+        modePvp(score1, score2, tourJ1, coupsJ1, coupsJ2);
+    } else if (histoire) {
+        couleur(KMAgenta); cout << " MODE HISTOIRE - Niveau " << niveau << endl;
+        couleur(KReset); cout << "Score : " << score1 << " / ";
+        couleur(KVert); cout << objectif << " points requis" << endl;
         couleur(KReset);
-        cout << "C'est au tour de : ";
-
-        if (tourJ1 == true) {
-            cout << "JOUEUR 1";
-        } else {
-            cout << "JOUEUR 2";
-        }
-
-        cout << endl << endl;
+    } else if (hardcore) {
+        couleur(KRouge); cout << "  MODE HARDCORE  " << endl;
+        couleur(KReset); cout << "Objectif : 80 points | ";
+        couleur(KRouge); cout << "Coups restants : " << coupsRestants << endl;
+        couleur(KReset); cout << "Score actuel : " << score1 << endl;
+        couleur(KReset);
     } else {
         couleur(KCyan); cout << " MODE SOLO (INFINI) " << endl;
         couleur(KRouge); cout << "Score actuel : " << score1 << endl;
@@ -90,7 +106,12 @@ void displayGrid(const mat &grid, const size_t &matSize, bool pvp, int score1, i
 
             case 6: couleur(KCyan);
                 break;
+
+
+            case 7: couleur(KNoir);
+                break;
             }
+
             cout << grid[i][j] << " ";
         }
         couleur(KReset);
@@ -131,8 +152,8 @@ void makeAMove (mat & grid, const maPosition & pos, const char & direction) {
     }
 
 
-        swap(grid[i_base][j_base], grid[i_destination][j_destination]);
-    }
+    swap(grid[i_base][j_base], grid[i_destination][j_destination]);
+}
 
 
 bool atLeastThreeInAColumn (const mat & grid, maPosition & pos, unsigned & howMany) {
@@ -256,29 +277,53 @@ void meilleurScore(const string & filename, const unsigned & nouveauScore) {
         if (fichierEcriture) {
             fichierEcriture << nouveauScore;
             cout << "Nouveau meilleur score: " << nouveauScore << "!" << endl;
-            } else {
-                cout << "Meilleur score actuel: " << ancienActuel << endl;
+        } else {
+            cout << "Meilleur score actuel: " << ancienActuel << endl;
         }
     }
 }
 
-// les niveaux
+
 void niveau1(mat & grille, size_t & taille) {
     taille = 5;
-    initGrid(grille, taille);
+    grille = {
+        {1, 2, 1, 2, 1},
+        {3, 4, 3, 4, 3},
+        {1, 3, 2, 4, 1},
+        {2, 1, 4, 3, 2},
+        {4, 2, 3, 1, 4}
+    };
 }
 
 void niveau2(mat & grille, size_t & taille) {
     taille = 7;
-    initGrid(grille, taille);
+    grille = {
+        {1,1,2,2,3,3,4},
+        {2,2,3,3,4,4,1},
+        {3,3,4,4,1,1,2},
+        {4,4,1,1,2,2,3},
+        {1,2,3,4,1,2,3},
+        {2,3,4,1,2,3,4},
+        {3,4,1,2,3,4,1}
+    };
 }
 
 void niveau3(mat & grille, size_t & taille) {
     taille = 9;
-    initGrid(grille, taille);
+    grille = {
+        {1, 2, 3, 4, 5, 1, 2, 3, 4},
+        {2, 3, 4, 5, 1, 2, 3, 4, 5},
+        {3, 4, 5, 1, 2, 3, 4, 5, 1},
+        {4, 5, 1, 2, 3, 4, 5, 1, 2},
+        {5, 1, 2, 3, 4, 5, 1, 2, 3},
+        {1, 2, 3, 4, 5, 1, 2, 3, 4},
+        {2, 3, 4, 5, 1, 2, 3, 4, 5},
+        {3, 4, 5, 1, 2, 3, 4, 5, 1},
+        {4, 5, 1, 2, 3, 4, 5, 1, 2}
+    };
 }
 
-unsigned objectifScore(int niveau) {
+unsigned objectifScore(unsigned int niveau) {
     if (niveau == 1) {
         return 40;
     } else if (niveau == 2) {
@@ -290,32 +335,29 @@ unsigned objectifScore(int niveau) {
 }
 
 
-void histoire(int niveau) {
+
+void histoire(unsigned int niveau) {
     clearScreen ();
     couleur(KBleu);
 
     if (niveau == 1) {
-        cout << "Niveau 1 : La Forêt Enchantée\n" << endl;
-        cout << "Vous entrez dans une forêt magique où les arbres sont faits de bonbons" << endl;
-        cout << "et les rivières coulent de chocolat. Votre mission est de libérer les créatures sucrées" << endl;
-        cout << "en alignant les bonbons et en récoltant des points." << endl;
+        cout << "Vous etes un aventurier, partez a l'aventure et finissez tous les donjons !" << endl;
+        cout << "Niveau 1 : donjon pour les nuls\n" << endl;
+        cout << "Vous entrez dans le premier donjon, votre but ici est d'éliminer 40 ennemis, si vous échouez ici," << endl;
+        cout << "ne tentez plus de rejouer a ce jeu, faites kebabiste" << endl;
     } else if (niveau == 2) {
-        cout << "Niveau 2 : Le Château de Caramel\n" << endl;
-        cout << "Vous arrivez devant un château majestueux construit entièrement en caramel." << endl;
-        cout << "À l'intérieur, des énigmes sucrées vous attendent. Alignez les bonbons pour avancer" << endl;
-        cout << "et découvrir les secrets du château." << endl;
+        cout << "Niveau 2 : Donjon moyen\n" << endl;
+        cout << "Vous arrivez devant ce nouveau donjon et vous vous rendez compte que votre meilleur ami," << endl;
+        cout << "y est enfermé, tentez de le liberer et accedez au dernier niveau !" << endl;
     } else if (niveau == 3) {
-        cout << "Niveau 3 : L'Île des Délices\n" << endl;
-        cout << "Vous êtes sur une île paradisiaque où tout est fait de friandises." << endl;
-        cout << "Explorez les plages de sucre, les montagnes de gâteaux et les forêts de bonbons" << endl;
-        cout << "tout en accumulant des points en alignant les bonbons." << endl;
+        cout << "Niveau 3 : Sauvez la princesse\n" << endl;
+        cout << "Vous etes dans le donjon le plus dangereux, faites attention" << endl;
+        cout << "Il faudra y sauver la princesse, mais pour cela, il faudra etre prudent" << endl;
     }
     couleur(KReset);
-    cout << "\nAppuyez sur Entrée pour continuer..." << endl;   
-    cin.ignore();
+    cout << "\nAppuyez sur Entrée pour continuer..." << endl;
     cin.get();
 }
-
 
 void introduction() {
     couleur(KRouge);
@@ -323,13 +365,17 @@ void introduction() {
     couleur(KVert);
     cout << "Le but du jeu est d'aligner au moins trois bonbons de la meme couleur pour les faire disparaitre et marquer des points.\n" << endl;
     couleur(KBleu);
+<<<<<<< HEAD
     cout << "Déplace un bonbon avec Z (haut), S (bas), A (gauche), E (droite)\n" << endl;
+=======
+    cout << "Deplace un bonbon avec Z (haut), S (bas), A (gauche), E (droite)\n" << endl;
+>>>>>>> b894f72b731d71621cd0d6490672192d9b05e2d3
     couleur(KJaune);
-    cout << "Chaque bonbon supprimé rapporte un point.\n" << endl;
+    cout << "Chaque bonbon supprime rapporte deux points.\n" << endl;
     couleur(KReset);
-    cout << "Amusez-vous bien!\n\n" << endl;
+    cout << "Amusez-vous bien!\n" << endl;
 
-    cout << "Appuyez sur Entrée pour commencer le jeu..." << endl;
+    cout << "Appuyez sur Entree pour commencer le jeu..." << endl;
     cin.ignore();
 }
 
@@ -341,34 +387,40 @@ int main()
     cout << "Votre score est de : " << score << endl;
     srand(time(0));
 
-    int niveau = 1;
-    mat mat_grille;
-    size_t t_grille;
-    histoire(niveau);
-
-    if (niveau == 1) {
-        niveau1(mat_grille, t_grille);
-    } else if (niveau == 2) {
-        niveau2(mat_grille, t_grille);
-    } else if (niveau == 3) {
-        niveau3(mat_grille, t_grille);
-    }
-
     int mode;
     cout << "CHOISISSEZ LE MODE DE JEU :" << endl;
     cout << "1. Mode Solo (Infini)" << endl;
     cout << "2. Mode PvP (5 coups chacun)" << endl;
+    cout << "3. Mode Histoire (3 Niveaux)" << endl;
+    cout << "4. Mode HARDCORE " << endl;
     cout << "Votre choix : ";
     cin >> mode;
 
     bool estPvP = (mode == 2);
-    int scoreJ1 = 0, scoreJ2 = 0;
-    int coupsJ1 = 0, coupsJ2 = 0;
-    bool tourJoueur1 = true;
+    bool modeHistoire = (mode == 3);
+    bool modeHardcore = (mode == 4);
 
-    //size_t t_grille = 5;
-    //mat mat_grille;
-    //initGrid(mat_grille, t_grille);
+    unsigned int scoreJ1 = 0;
+    unsigned int scoreJ2 = 0;
+    unsigned int coupsJ1 = 0;
+    unsigned int coupsJ2 = 0;
+    int coupsRestantsHardcore = 10;
+    bool tourJoueur1 = true;
+    int niveauActuel = 1;
+
+    size_t t_grille = 5;
+    mat mat_grille;
+
+    if (modeHistoire) {
+        histoire(niveauActuel);
+        niveau1(mat_grille, t_grille);
+    } else if (modeHardcore) {
+        KNbCandies = 7;
+        t_grille = 6;
+        initGrid(mat_grille, t_grille);
+    } else {
+        initGrid(mat_grille, t_grille);
+    }
 
     unsigned i_abs, j_ord;
     char direction;
@@ -378,17 +430,32 @@ int main()
 
     while (jeu) {
 
-        displayGrid(mat_grille, t_grille, estPvP, scoreJ1, scoreJ2, tourJoueur1, coupsJ1, coupsJ2);
+        unsigned objectif = 0;
+
+        if (modeHistoire) {
+            objectif = objectifScore(niveauActuel);
+        }
+
+        displayGrid(mat_grille, t_grille, estPvP, scoreJ1, scoreJ2, tourJoueur1, coupsJ1, coupsJ2, modeHistoire, niveauActuel, objectif, modeHardcore, coupsRestantsHardcore);
 
 
         if (estPvP && coupsJ1 >= 5 && coupsJ2 >= 5) {
             if (scoreJ1 > scoreJ2) cout << "VICTOIRE DU JOUEUR 1 !" << endl;
             else if (scoreJ2 > scoreJ1) cout << "VICTOIRE DU JOUEUR 2 !" << endl;
             else cout << "EGALITE !" << endl;
+            break;
+        }
+
+        if (modeHardcore && coupsRestantsHardcore <= 0) {
+            if (scoreJ1 >= 80) cout << "MODE HARDCORE REUSSI !" << endl;
+            else cout << " Score insuffisant." << endl;
+            break;
         }
 
         cout << "\nEntrez [Ligne] [Colonne] [Direction (AZES)]  ";
-        cin >> i_abs >> j_ord >> direction;
+        cin >> i_abs;
+        cin >> j_ord;
+        cin >> direction;
 
         maPosition pos = {i_abs, j_ord};
         makeAMove(mat_grille, pos, direction);
@@ -396,6 +463,10 @@ int main()
         if (estPvP) {
             if (tourJoueur1) coupsJ1++;
             else coupsJ2++;
+        }
+
+        if (modeHardcore) {
+            coupsRestantsHardcore--;
         }
 
         bool encore;
@@ -406,36 +477,36 @@ int main()
 
                 if (tourJoueur1) scoreJ1 += nb_match * 2;
                 else scoreJ2 += nb_match * 2;
+                cout << "\n Il y a  " << nb_match << "  bonbons supprimes. \n";
                 encore = true;
             } else if (atLeastThreeInARow(mat_grille, pos_match, nb_match)) {
                 removalInRow(mat_grille, pos_match, nb_match);
 
                 if (tourJoueur1) scoreJ1 += nb_match * 2;
                 else scoreJ2 += nb_match * 2;
+                cout << "\n il y a  " << nb_match << "  bonbons supprimes. \n";
                 encore = true;
             }
         } while (encore);
 
-        unsigned objectif = objectifScore(niveau);
-        if (!estPvP && scoreJ1 >= objectif) {
-            cout << "FELICITATIONS ! Vous avez atteint l'objectif de " << objectif << " points ! Niveau " << niveau << " terminé" << endl;
-            niveau++;
-            if (niveau > 3) {
-                cout << "Vous avez terminé tous les niveaux ! Bravo !" << endl;
+
+
+        if (modeHistoire && scoreJ1 >= objectif) {
+            cout << "\n Bravo ! Vous avez réussi !" << endl;
+            niveauActuel++;
+
+            if (niveauActuel > 3) {
+                cout << "VOUS AVEZ FINI TOUTE L'HISTOIRE ! BRAVO !" << endl;
                 jeu = false;
-                break;
-            } 
-            histoire(niveau);
-            
-            if (niveau == 1) {
-                niveau1(mat_grille, t_grille);
-            } else if (niveau == 2) {
-                niveau2(mat_grille, t_grille);
-            } else if (niveau == 3) {
-                niveau3(mat_grille, t_grille);
+            } else {
+                scoreJ1 = 0;
+                histoire(niveauActuel);
+                if (niveauActuel == 2) niveau2(mat_grille, t_grille);
+                else if (niveauActuel == 3) niveau3(mat_grille, t_grille);
             }
             continue;
         }
+
 
         if (estPvP) {
             tourJoueur1 = !tourJoueur1;
@@ -450,4 +521,3 @@ int main()
 
     return 0;
 }
-
