@@ -1,10 +1,11 @@
+
 #include <iostream>
 #include <vector>
 #include <cstdlib>
 #include <fstream>
 #include <ctime>
 
-using namespace std;
+    using namespace std;
 
 
 void clearScreen () {
@@ -63,7 +64,7 @@ void modePvp (unsigned int score1, unsigned int score2, bool tourJ1, unsigned in
 }
 
 
-void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int score1,unsigned int score2, bool tourJ1,unsigned int coupsJ1,unsigned int coupsJ2, bool histoire, unsigned int niveau, unsigned objectif, bool hardcore, int coupsRestants,bool ContreLaMontre, int tempsRestant) {
+void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int score1,unsigned int score2, bool tourJ1,unsigned int coupsJ1,unsigned int coupsJ2, bool histoire, unsigned int niveau, unsigned objectif, bool hardcore, int coupsRestants) {
     clearScreen ();
 
     if (pvp) {
@@ -77,13 +78,6 @@ void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int 
         couleur(KRouge); cout << "  MODE HARDCORE  " << endl;
         couleur(KReset); cout << "Objectif : 80 points | ";
         couleur(KRouge); cout << "Coups restants : " << coupsRestants << endl;
-        couleur(KReset); cout << "Score actuel : " << score1 << endl;
-        couleur(KReset);
-    } else if (ContreLaMontre)
-    {
-        couleur(KBleu); cout << " MODE CONTRE LA MONTRE  " << endl;
-        couleur(KReset); cout << "Objectif : 100 points | ";
-        couleur(KRouge); cout << "Temps restant : " << tempsRestant << " secondes | ";
         couleur(KReset); cout << "Score actuel : " << score1 << endl;
         couleur(KReset);
     } else {
@@ -113,7 +107,6 @@ void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int 
 
             case 6: couleur(KCyan);
                 break;
-
 
             case 7: couleur(KNoir);
                 break;
@@ -252,40 +245,38 @@ void removalInRow(mat & grid, const maPosition & pos, unsigned howMany) {
 }
 
 
-unsigned score = 0;
 
-void lireScore(const string & filename) {
-    ifstream fichier(filename);
+void lireScore(const string & nomFichier, unsigned & score) {
+    ifstream fichier(nomFichier);
     if (fichier) {
         fichier >> score;
-        fichier.close();
+    } else {
+        score = 0;
     }
 }
 
-void sauvegarderScore(const string & filename) {
-    ofstream fichier(filename);
+void sauvegarderScore(const string & nomFichier, unsigned score) {
+    ofstream fichier(nomFichier);
     if (fichier) {
         fichier << score;
-        fichier.close();
     }
 }
+void meilleurScore(const string & nomFichier, const unsigned & nouveauScore) {
+    unsigned nouveauMeilleurScore = 0;
 
-void meilleurScore(const string & filename, const unsigned & nouveauScore) {
-    unsigned ancienActuel = 0;
-
-    ifstream fichierLecture(filename);
+    ifstream fichierLecture(nomFichier);
     if (fichierLecture) {
-        fichierLecture >> ancienActuel;
+        fichierLecture >> nouveauMeilleurScore ;
         fichierLecture.close();
     }
 
-    if (nouveauScore > ancienActuel) {
-        ofstream fichierEcriture(filename);
+    if (nouveauScore > nouveauMeilleurScore ) {
+        ofstream fichierEcriture(nomFichier);
         if (fichierEcriture) {
             fichierEcriture << nouveauScore;
             cout << "Nouveau meilleur score: " << nouveauScore << "!" << endl;
         } else {
-            cout << "Meilleur score actuel: " << ancienActuel << endl;
+            cout << "Meilleur score actuel: " << nouveauMeilleurScore  << endl;
         }
     }
 }
@@ -354,7 +345,7 @@ void histoire(unsigned int niveau) {
         cout << "ne tentez plus de rejouer a ce jeu, faites kebabiste" << endl;
     } else if (niveau == 2) {
         cout << "Niveau 2 : Donjon moyen\n" << endl;
-        cout << "Vous arrivez devant ce nouveau donjon et vous vous rendez compte que votre meilleur ami," << endl;
+        cout << "Vous arrivez devant ce nouveau donjon et vous vous rendez compte que votre meilleur ami" << endl;
         cout << "y est enfermé, tentez de le liberer et accedez au dernier niveau !" << endl;
     } else if (niveau == 3) {
         cout << "Niveau 3 : Sauvez la princesse\n" << endl;
@@ -376,7 +367,7 @@ void introduction() {
     cout << "Deplace un bonbon avec Z (haut), S (bas), A (gauche), E (droite)\n" << endl;
     couleur(KJaune);
     cout << "Chaque bonbon supprime rapporte deux points.\n" << endl;
-    couleur(KReset);
+    couleur(KCyan);
     cout << "Amusez-vous bien!\n" << endl;
 
     cout << "Appuyez sur Entree pour commencer le jeu..." << endl;
@@ -387,9 +378,9 @@ int main()
 {
     introduction();
 
-    lireScore("scores.txt");
-    cout << "Votre score est de : " << score << endl;
-    srand(time(0));
+    unsigned score = 0;
+    lireScore("scores.txt", score);
+    cout << "Meilleur score actuel : " << score << endl;
 
     int mode;
     cout << "CHOISISSEZ LE MODE DE JEU :" << endl;
@@ -397,41 +388,28 @@ int main()
     cout << "2. Mode PvP (5 coups chacun)" << endl;
     cout << "3. Mode Histoire (3 Niveaux)" << endl;
     cout << "4. Mode HARDCORE " << endl;
-    cout << "5. Mode Contre la Montre (60 secondes)" << endl;
     cout << "Votre choix : ";
     cin >> mode;
 
     bool estPvP = (mode == 2);
     bool modeHistoire = (mode == 3);
     bool modeHardcore = (mode == 4);
-    bool modeContreLaMontre = (mode == 5);
 
     unsigned int scoreJ1 = 0;
     unsigned int scoreJ2 = 0;
     unsigned int coupsJ1 = 0;
     unsigned int coupsJ2 = 0;
     int coupsRestantsHardcore = 10;
-    int tempsRestantMontre;
     bool tourJoueur1 = true;
-    int niveauActuel = 1;
+    int niveau = 1;
 
-    time_t tempsDebut, tempsActuel;
-    int dureeDeLaMontre = 60;
-    tempsActuel = time(0);
-    tempsDebut = time(0);
-    tempsRestantMontre = dureeDeLaMontre - (tempsActuel - tempsDebut);
-    
     size_t t_grille = 5;
     mat mat_grille;
 
     if (modeHistoire) {
-        histoire(niveauActuel);
+        histoire(niveau);
         niveau1(mat_grille, t_grille);
     } else if (modeHardcore) {
-        KNbCandies = 7;
-        t_grille = 6;
-        initGrid(mat_grille, t_grille);
-    } else if (modeContreLaMontre) {
         KNbCandies = 7;
         t_grille = 6;
         initGrid(mat_grille, t_grille);
@@ -442,48 +420,36 @@ int main()
     unsigned i_abs, j_ord;
     char direction;
     bool jeu = true;
-    maPosition pos_match;
-    unsigned nb_match;
+    maPosition pos_bonbons;
+    unsigned nb_bonbons_sup;
 
     while (jeu) {
 
         unsigned objectif = 0;
 
         if (modeHistoire) {
-            objectif = objectifScore(niveauActuel);
+            objectif = objectifScore(niveau);
         }
 
-        displayGrid(mat_grille, t_grille, estPvP, scoreJ1, scoreJ2, tourJoueur1, coupsJ1, coupsJ2, modeHistoire, niveauActuel, objectif, modeHardcore, modeContreLaMontre, coupsRestantsHardcore, tempsRestantMontre);
+        displayGrid(mat_grille, t_grille, estPvP, scoreJ1, scoreJ2, tourJoueur1, coupsJ1, coupsJ2, modeHistoire, niveau, objectif, modeHardcore, coupsRestantsHardcore);
 
 
         if (estPvP && coupsJ1 >= 5 && coupsJ2 >= 5) {
-            if (scoreJ1 > scoreJ2) cout << "VICTOIRE DU JOUEUR 1 !" << endl;
-            else if (scoreJ2 > scoreJ1) cout << "VICTOIRE DU JOUEUR 2 !" << endl;
-            else cout << "EGALITE !" << endl;
+            if (scoreJ1 > scoreJ2)
+                cout << "VICTOIRE DU JOUEUR 1 !" << endl;
+            else if (scoreJ2 > scoreJ1)
+                cout << "VICTOIRE DU JOUEUR 2 !" << endl;
+            else
+                cout << "EGALITE !" << endl;
             break;
         }
 
         if (modeHardcore && coupsRestantsHardcore <= 0) {
             if (scoreJ1 >= 80) cout << "MODE HARDCORE REUSSI !" << endl;
-            else cout << " Score insuffisant." << endl;
+            else cout << "Score insuffisant." << endl;
             break;
         }
 
-        if (modeContreLaMontre && tempsRestantMontre) {
-            tempsActuel = time(0);
-            tempsRestantMontre = dureeDeLaMontre - (tempsActuel - tempsDebut);
-            
-            if (scoreJ1 >= 100) {
-                cout << "MODE CONTRE LA MONTRE REUSSI !" << endl;
-                break;
-            } else if (tempsRestantMontre <= 0) {
-                cout << "TEMPS ECOULE !" << endl;
-                if (scoreJ1 < 100) {
-                    cout << " Vous n'avez pas atteint 100 points." << endl;
-                }
-            }
-            
-        }
         cout << "\nEntrez [Ligne] [Colonne] [Direction (AZES)]  ";
         cin >> i_abs;
         cin >> j_ord;
@@ -493,8 +459,10 @@ int main()
         makeAMove(mat_grille, pos, direction);
 
         if (estPvP) {
-            if (tourJoueur1) coupsJ1++;
-            else coupsJ2++;
+            if (tourJoueur1)
+                coupsJ1++;
+            else
+                coupsJ2++;
         }
 
         if (modeHardcore) {
@@ -504,19 +472,24 @@ int main()
         bool encore;
         do {
             encore = false;
-            if (atLeastThreeInAColumn(mat_grille, pos_match, nb_match)) {
-                removalInColumn(mat_grille, pos_match, nb_match);
+            if (atLeastThreeInAColumn(mat_grille, pos_bonbons, nb_bonbons_sup)) {
+                removalInColumn(mat_grille, pos_bonbons, nb_bonbons_sup);
 
-                if (tourJoueur1) scoreJ1 += nb_match * 2;
-                else scoreJ2 += nb_match * 2;
-                cout << "\n Il y a  " << nb_match << "  bonbons supprimes. \n";
+                if (tourJoueur1)
+                    scoreJ1 += nb_bonbons_sup * 2;
+                else
+                    scoreJ2 += nb_bonbons_sup * 2;
+
+                cout << "\n Il y a  " << nb_bonbons_sup << "  bonbons supprimes. \n";
                 encore = true;
-            } else if (atLeastThreeInARow(mat_grille, pos_match, nb_match)) {
-                removalInRow(mat_grille, pos_match, nb_match);
+            } else if (atLeastThreeInARow(mat_grille, pos_bonbons, nb_bonbons_sup)) {
+                removalInRow(mat_grille, pos_bonbons, nb_bonbons_sup);
 
-                if (tourJoueur1) scoreJ1 += nb_match * 2;
-                else scoreJ2 += nb_match * 2;
-                cout << "\n il y a  " << nb_match << "  bonbons supprimes. \n";
+                if (tourJoueur1)
+                    scoreJ1 += nb_bonbons_sup * 2;
+                else
+                    scoreJ2 += nb_bonbons_sup * 2;
+                cout << "\n il y a  " << nb_bonbons_sup << "  bonbons supprimes. \n";
                 encore = true;
             }
         } while (encore);
@@ -525,16 +498,16 @@ int main()
 
         if (modeHistoire && scoreJ1 >= objectif) {
             cout << "\n Bravo ! Vous avez réussi !" << endl;
-            niveauActuel++;
+            niveau++;
 
-            if (niveauActuel > 3) {
+            if (niveau > 3) {
                 cout << "VOUS AVEZ FINI TOUTE L'HISTOIRE ! BRAVO !" << endl;
                 jeu = false;
             } else {
                 scoreJ1 = 0;
-                histoire(niveauActuel);
-                if (niveauActuel == 2) niveau2(mat_grille, t_grille);
-                else if (niveauActuel == 3) niveau3(mat_grille, t_grille);
+                histoire(niveau);
+                if (niveau == 2) niveau2(mat_grille, t_grille);
+                else if (niveau == 3) niveau3(mat_grille, t_grille);
             }
             continue;
         }
@@ -544,11 +517,6 @@ int main()
             tourJoueur1 = !tourJoueur1;
         }
     }
-    cout << "Score sauvegardé dans le fichier : ";
-    lireScore("scores.txt");
-    cout << score << endl;
-
-    sauvegarderScore("scores.txt");
     meilleurScore("scores.txt", scoreJ1);
 
     return 0;
