@@ -22,6 +22,7 @@ const unsigned KMAgenta   (35);
 const unsigned KCyan      (36);
 const unsigned KImpossible = 0;
 
+
 void couleur (const unsigned & coul) {
     cout << "\033[" << coul <<"m";
 }
