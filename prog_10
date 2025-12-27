@@ -474,7 +474,6 @@ int main()
             encore = false;
             if (atLeastThreeInAColumn(mat_grille, pos_bonbons, nb_bonbons_sup)) {
                 removalInColumn(mat_grille, pos_bonbons, nb_bonbons_sup);
-
                 if (tourJoueur1)
                     scoreJ1 += nb_bonbons_sup * 2;
                 else
@@ -486,7 +485,7 @@ int main()
                 removalInRow(mat_grille, pos_bonbons, nb_bonbons_sup);
 
                 if (tourJoueur1)
-                    scoreJ1 += nb_bonbons_sup * 2;
+                    scoreJ1 += nb_bonbons_sup * 2; 
                 else
                     scoreJ2 += nb_bonbons_sup * 2;
                 cout << "\n il y a  " << nb_bonbons_sup << "  bonbons supprimes. \n";
