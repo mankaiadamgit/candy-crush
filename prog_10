@@ -63,7 +63,7 @@ void modePvp (unsigned int score1, unsigned int score2, bool tourJ1, unsigned in
 }
 
 
-void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int score1,unsigned int score2, bool tourJ1,unsigned int coupsJ1,unsigned int coupsJ2, bool histoire, unsigned int niveau, unsigned objectif, bool hardcore, int coupsRestants) {
+void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int score1,unsigned int score2, bool tourJ1,unsigned int coupsJ1,unsigned int coupsJ2, bool histoire, unsigned int niveau, unsigned objectif, bool hardcore, int coupsRestants,bool ContreLaMontre, int tempsRestant) {
     clearScreen ();
 
     if (pvp) {
@@ -77,6 +77,13 @@ void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int 
         couleur(KRouge); cout << "  MODE HARDCORE  " << endl;
         couleur(KReset); cout << "Objectif : 80 points | ";
         couleur(KRouge); cout << "Coups restants : " << coupsRestants << endl;
+        couleur(KReset); cout << "Score actuel : " << score1 << endl;
+        couleur(KReset);
+    } else if (ContreLaMontre)
+    {
+        couleur(KBleu); cout << " MODE CONTRE LA MONTRE  " << endl;
+        couleur(KReset); cout << "Objectif : 100 points | ";
+        couleur(KRouge); cout << "Temps restant : " << tempsRestant << " secondes | ";
         couleur(KReset); cout << "Score actuel : " << score1 << endl;
         couleur(KReset);
     } else {
@@ -365,11 +372,8 @@ void introduction() {
     couleur(KVert);
     cout << "Le but du jeu est d'aligner au moins trois bonbons de la meme couleur pour les faire disparaitre et marquer des points.\n" << endl;
     couleur(KBleu);
-<<<<<<< HEAD
-    cout << "Déplace un bonbon avec Z (haut), S (bas), A (gauche), E (droite)\n" << endl;
-=======
+
     cout << "Deplace un bonbon avec Z (haut), S (bas), A (gauche), E (droite)\n" << endl;
->>>>>>> b894f72b731d71621cd0d6490672192d9b05e2d3
     couleur(KJaune);
     cout << "Chaque bonbon supprime rapporte deux points.\n" << endl;
     couleur(KReset);
@@ -393,21 +397,30 @@ int main()
     cout << "2. Mode PvP (5 coups chacun)" << endl;
     cout << "3. Mode Histoire (3 Niveaux)" << endl;
     cout << "4. Mode HARDCORE " << endl;
+    cout << "5. Mode Contre la Montre (60 secondes)" << endl;
     cout << "Votre choix : ";
     cin >> mode;
 
     bool estPvP = (mode == 2);
     bool modeHistoire = (mode == 3);
     bool modeHardcore = (mode == 4);
+    bool modeContreLaMontre = (mode == 5);
 
     unsigned int scoreJ1 = 0;
     unsigned int scoreJ2 = 0;
     unsigned int coupsJ1 = 0;
     unsigned int coupsJ2 = 0;
     int coupsRestantsHardcore = 10;
+    int tempsRestantMontre;
     bool tourJoueur1 = true;
     int niveauActuel = 1;
 
+    time_t tempsDebut, tempsActuel;
+    int dureeDeLaMontre = 60;
+    tempsActuel = time(0);
+    tempsDebut = time(0);
+    tempsRestantMontre = dureeDeLaMontre - (tempsActuel - tempsDebut);
+    
     size_t t_grille = 5;
     mat mat_grille;
 
@@ -415,6 +428,10 @@ int main()
         histoire(niveauActuel);
         niveau1(mat_grille, t_grille);
     } else if (modeHardcore) {
+        KNbCandies = 7;
+        t_grille = 6;
+        initGrid(mat_grille, t_grille);
+    } else if (modeContreLaMontre) {
         KNbCandies = 7;
         t_grille = 6;
         initGrid(mat_grille, t_grille);
@@ -436,7 +453,7 @@ int main()
             objectif = objectifScore(niveauActuel);
         }
 
-        displayGrid(mat_grille, t_grille, estPvP, scoreJ1, scoreJ2, tourJoueur1, coupsJ1, coupsJ2, modeHistoire, niveauActuel, objectif, modeHardcore, coupsRestantsHardcore);
+        displayGrid(mat_grille, t_grille, estPvP, scoreJ1, scoreJ2, tourJoueur1, coupsJ1, coupsJ2, modeHistoire, niveauActuel, objectif, modeHardcore, modeContreLaMontre, coupsRestantsHardcore, tempsRestantMontre);
 
 
         if (estPvP && coupsJ1 >= 5 && coupsJ2 >= 5) {
@@ -452,6 +469,21 @@ int main()
             break;
         }
 
+        if (modeContreLaMontre && tempsRestantMontre) {
+            tempsActuel = time(0);
+            tempsRestantMontre = dureeDeLaMontre - (tempsActuel - tempsDebut);
+            
+            if (scoreJ1 >= 100) {
+                cout << "MODE CONTRE LA MONTRE REUSSI !" << endl;
+                break;
+            } else if (tempsRestantMontre <= 0) {
+                cout << "TEMPS ECOULE !" << endl;
+                if (scoreJ1 < 100) {
+                    cout << " Vous n'avez pas atteint 100 points." << endl;
+                }
+            }
+            
+        }
         cout << "\nEntrez [Ligne] [Colonne] [Direction (AZES)]  ";
         cin >> i_abs;
         cin >> j_ord;
