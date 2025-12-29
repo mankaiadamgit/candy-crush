@@ -1,11 +1,10 @@
-
 #include <iostream>
 #include <vector>
 #include <cstdlib>
 #include <fstream>
 #include <ctime>
 
-    using namespace std;
+using namespace std;
 
 
 void clearScreen () {
@@ -73,7 +72,8 @@ void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int 
     } else if (histoire) {
         couleur(KMAgenta); cout << " MODE HISTOIRE - Niveau " << niveau << endl;
         couleur(KReset); cout << "Score : " << score1 << " / ";
-        couleur(KVert); cout << objectif << " points requis" << endl;
+        couleur(KVert); cout << objectif << " points requis";
+        couleur(KRouge); cout << " | [Ligne] [Colonne] Q pour quitter " << endl;
         couleur(KReset);
     } else if (hardcore) {
         couleur(KRouge); cout << "  MODE HARDCORE  " << endl;
@@ -83,7 +83,7 @@ void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int 
         couleur(KReset);
     } else {
         couleur(KCyan); cout << " MODE SOLO (INFINI) " << endl;
-        couleur(KRouge); cout << "Score actuel : " << score1 << endl;
+        couleur(KRouge); cout << "Score actuel : " << score1 << " | [Ligne] [Colonne] Q pour quitter " << endl;
         couleur(KReset);
     }
 
@@ -245,43 +245,88 @@ void removalInRow(mat & grid, const maPosition & pos, unsigned howMany) {
     }
 }
 
-
-
-void lireScore(const string & nomFichier, unsigned & score) {
-    ifstream fichier(nomFichier);
-    if (fichier) {
-        fichier >> score;
+void meilleurScorePvP(const string & nomFichier, unsigned score1, unsigned score2) {
+    
+    unsigned meilleurPartie;
+    if (score1 > score2) {
+        meilleurPartie = score1;
     } else {
-        score = 0;
+        meilleurPartie = score2;
     }
-}
 
-void sauvegarderScore(const string & nomFichier, unsigned score) {
-    ofstream fichier(nomFichier);
-    if (fichier) {
-        fichier << score;
-    }
-}
-void meilleurScore(const string & nomFichier, const unsigned & nouveauScore) {
-    unsigned nouveauMeilleurScore = 0;
-
+    unsigned ancienScore;
     ifstream fichierLecture(nomFichier);
     if (fichierLecture) {
-        fichierLecture >> nouveauMeilleurScore ;
-        fichierLecture.close();
-    }
-
-    if (nouveauScore > nouveauMeilleurScore ) {
+        fichierLecture >> ancienScore;
+    } else {
         ofstream fichierEcriture(nomFichier);
-        if (fichierEcriture) {
-            fichierEcriture << nouveauScore;
-            cout << "Nouveau meilleur score: " << nouveauScore << "!" << endl;
-        } else {
-            cout << "Meilleur score actuel: " << nouveauMeilleurScore  << endl;
-        }
+        fichierEcriture << meilleurPartie;
+        cout << "Nouveau Score PvP : " << meilleurPartie << endl;
     }
 }
 
+void meilleurScoreInfini(const string & nomFichier, unsigned scorePartie) {
+    unsigned meilleurScore = 0;
+   
+    ifstream fichierLecture(nomFichier);
+    if (fichierLecture) {
+        fichierLecture >> meilleurScore;
+    } 
+
+    if (scorePartie > meilleurScore) {
+        ofstream fichierEcriture(nomFichier);
+        fichierEcriture << scorePartie;
+        cout << "Nouveau Meilleur Score Solo : " << scorePartie << " ! " << endl;
+    } else {
+        cout << "Meilleur Score Solo actuel : " << meilleurScore << endl;
+    }
+}
+
+void meilleurScoreHardcore(const string & nomFichier, unsigned scorePartie) {
+    unsigned meilleurScore = 0;
+   
+    ifstream fichierLecture(nomFichier);
+    if (fichierLecture) {
+        fichierLecture >> meilleurScore;
+    } 
+
+    if (scorePartie > meilleurScore) {
+        ofstream fichierEcriture(nomFichier);
+        fichierEcriture << scorePartie;
+        cout << "Nouveau Meilleur Score Hardcore : " << scorePartie << " ! " << endl;
+    } else {
+        cout << "Meilleur Score Hardcore actuel : " << meilleurScore << endl;
+    }
+}
+
+void meilleurScoreHistoire(const string & nomFichier, unsigned scorePartie, unsigned niveau) {
+    vector<unsigned> Scores(3, 0);
+   
+    ifstream fichierLecture(nomFichier);
+    if (fichierLecture) {
+        for (unsigned i = 0; i < 3; ++i) {
+            fichierLecture >> Scores[i];
+        }
+    } 
+
+    if (scorePartie > Scores[niveau-1]) {
+        Scores[niveau-1] = scorePartie;
+        ofstream fichierEcriture(nomFichier);
+        for (unsigned i = 0; i < 3; ++i) {
+            fichierEcriture << Scores[i] << endl;
+        }
+        cout << "Nouveau Meilleur Score Histoire : " << scorePartie << " (Niveau " << niveau << " )" << endl;
+    } 
+    unsigned meilleurScore = 0;
+    unsigned meilleurNiveau = 0;
+    for (unsigned i = 0; i < 3; ++i) {
+        if (Scores[i] > meilleurScore) {
+            meilleurScore = Scores[i];
+            meilleurNiveau = i + 1;
+        }
+    }
+    cout << "Meilleur Score Histoire actuel : " << meilleurScore << " (Niveau " << meilleurNiveau << " )" << endl;
+}
 
 void niveau1(mat & grille, size_t & taille) {
     taille = 5;
@@ -379,10 +424,6 @@ int main()
 {
     introduction();
 
-    unsigned score = 0;
-    lireScore("scores.txt", score);
-    cout << "Meilleur score actuel : " << score << endl;
-
     int mode;
     cout << "CHOISISSEZ LE MODE DE JEU :" << endl;
     cout << "1. Mode Solo (Infini)" << endl;
@@ -451,6 +492,15 @@ int main()
             break;
         }
 
+        if (modeHistoire && direction == 'Q') {
+            cout << "Fin du mode Histoire ! " << endl;
+            break;
+        }
+
+        if (mode == 1 && direction == 'Q') {
+            cout << "Fin du mode Solo ! " << endl;
+            break;
+        }
         cout << "\nEntrez [Ligne] [Colonne] [Direction (AZES)]  ";
         cin >> i_abs;
         cin >> j_ord;
@@ -517,7 +567,16 @@ int main()
             tourJoueur1 = !tourJoueur1;
         }
     }
-    meilleurScore("scores.txt", scoreJ1);
+    
+    if (estPvP) {
+        meilleurScorePvP("pvp_scores.txt", scoreJ1, scoreJ2);
+    } else if (modeHistoire) {
+        meilleurScoreHistoire("histoire_scores.txt", scoreJ1);
+    } else if (modeHardcore) {
+        meilleurScoreHardcore("hardcore_scores.txt", scoreJ1);
+    } else {
+        meilleurScoreInfini("infini_scores.txt", scoreJ1);
+    }
 
     return 0;
 }
