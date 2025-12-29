@@ -5,7 +5,7 @@
 #include <fstream>
 #include <ctime>
 
-    using namespace std;
+using namespace std;
 
 
 void clearScreen () {
@@ -324,7 +324,7 @@ void niveau3(mat & grille, size_t & taille) {
 
 unsigned objectifScore(unsigned int niveau) {
     if (niveau == 1) {
-        return 40;
+        return 50;
     } else if (niveau == 2) {
         return 100;
     } else if (niveau == 3) {
@@ -486,7 +486,7 @@ int main()
                 removalInRow(mat_grille, pos_bonbons, nb_bonbons_sup);
 
                 if (tourJoueur1)
-                    scoreJ1 += nb_bonbons_sup * 2; 
+                    scoreJ1 += nb_bonbons_sup * 2;
                 else
                     scoreJ2 += nb_bonbons_sup * 2;
                 cout << "\n il y a  " << nb_bonbons_sup << "  bonbons supprimes. \n";
