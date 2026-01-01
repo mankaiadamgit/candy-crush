@@ -51,7 +51,7 @@ void modePvp (unsigned int score1, unsigned int score2, bool tourJ1, unsigned in
     couleur(KRouge); cout << "J1: " << score1 << " pts (" << coupsJ1 << "/5 coups)";
     couleur(KReset); cout << " | ";
     couleur(KVert);  cout << "J2: " << score2 << " pts (" << coupsJ2 << "/5 coups)" << endl;
-    couleur(KReset);
+    couleur(KRouge);
     cout << "C'est au tour de : ";
 
     if (tourJ1 == true) {
@@ -71,15 +71,15 @@ void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int 
         modePvp(score1, score2, tourJ1, coupsJ1, coupsJ2);
     } else if (histoire) {
         couleur(KMAgenta); cout << " MODE HISTOIRE - Niveau " << niveau << endl;
-        couleur(KReset); cout << "Score : " << score1 << " / ";
+                           cout << "Score : " << score1 << " / ";
         couleur(KVert); cout << objectif << " points requis";
         couleur(KRouge); cout << " | [Ligne] [Colonne] Q pour quitter " << endl;
         couleur(KReset);
     } else if (hardcore) {
         couleur(KRouge); cout << "  MODE HARDCORE  " << endl;
-        couleur(KReset); cout << "Objectif : 80 points | ";
+        cout << "Objectif : 80 points | ";
         couleur(KRouge); cout << "Coups restants : " << coupsRestants << endl;
-        couleur(KReset); cout << "Score actuel : " << score1 << endl;
+        cout << "Score actuel : " << score1 << endl;
         couleur(KReset);
     } else {
         couleur(KCyan); cout << " MODE SOLO (INFINI) " << endl;
@@ -88,7 +88,8 @@ void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int 
     }
 
     for (size_t i = 0; i < matSize; i++) {
-        cout << i << " | ";
+    couleur(KMAgenta); cout << i << " | ";
+
         for (size_t j = 0; j < matSize; j++) {
             switch (grid[i][j]) {
             case 1: couleur(KRouge);
@@ -119,10 +120,12 @@ void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int 
         cout << endl;
     }
 
+    couleur(KMAgenta);
     cout << "  --";
     for (size_t j = 0; j < matSize; j++) {
         cout << "--";
     }
+
     cout << endl << "    ";
     for (size_t j = 0; j < matSize; j++) {
         cout << j << " ";
@@ -246,7 +249,7 @@ void removalInRow(mat & grid, const maPosition & pos, unsigned howMany) {
 }
 
 void meilleurScorePvP(const string & nomFichier, unsigned score1, unsigned score2) {
-    
+
     unsigned meilleurPartie;
     if (score1 > score2) {
         meilleurPartie = score1;
@@ -267,11 +270,11 @@ void meilleurScorePvP(const string & nomFichier, unsigned score1, unsigned score
 
 void meilleurScoreInfini(const string & nomFichier, unsigned scorePartie) {
     unsigned meilleurScore = 0;
-   
+
     ifstream fichierLecture(nomFichier);
     if (fichierLecture) {
         fichierLecture >> meilleurScore;
-    } 
+    }
 
     if (scorePartie > meilleurScore) {
         ofstream fichierEcriture(nomFichier);
@@ -284,11 +287,11 @@ void meilleurScoreInfini(const string & nomFichier, unsigned scorePartie) {
 
 void meilleurScoreHardcore(const string & nomFichier, unsigned scorePartie) {
     unsigned meilleurScore = 0;
-   
+
     ifstream fichierLecture(nomFichier);
     if (fichierLecture) {
         fichierLecture >> meilleurScore;
-    } 
+    }
 
     if (scorePartie > meilleurScore) {
         ofstream fichierEcriture(nomFichier);
@@ -301,13 +304,13 @@ void meilleurScoreHardcore(const string & nomFichier, unsigned scorePartie) {
 
 void meilleurScoreHistoire(const string & nomFichier, unsigned scorePartie, unsigned niveau) {
     vector<unsigned> Scores(3, 0);
-   
+
     ifstream fichierLecture(nomFichier);
     if (fichierLecture) {
         for (unsigned i = 0; i < 3; ++i) {
             fichierLecture >> Scores[i];
         }
-    } 
+    }
 
     if (scorePartie > Scores[niveau-1]) {
         Scores[niveau-1] = scorePartie;
@@ -316,7 +319,7 @@ void meilleurScoreHistoire(const string & nomFichier, unsigned scorePartie, unsi
             fichierEcriture << Scores[i] << endl;
         }
         cout << "Nouveau Meilleur Score Histoire : " << scorePartie << " (Niveau " << niveau << " )" << endl;
-    } 
+    }
     unsigned meilleurScore = 0;
     unsigned meilleurNiveau = 0;
     for (unsigned i = 0; i < 3; ++i) {
@@ -388,7 +391,7 @@ void histoire(unsigned int niveau) {
         cout << "Vous etes un aventurier, partez a l'aventure et finissez tous les donjons !" << endl;
         cout << "Niveau 1 : donjon pour les nuls\n" << endl;
         cout << "Vous entrez dans le premier donjon, votre but ici est d'éliminer 40 ennemis, si vous échouez ici," << endl;
-        cout << "ne tentez plus de rejouer a ce jeu, faites kebabiste" << endl;
+        cout << "ne tentez plus de rejouer à ce jeu, faites kebabiste" << endl;
     } else if (niveau == 2) {
         cout << "Niveau 2 : Donjon moyen\n" << endl;
         cout << "Vous arrivez devant ce nouveau donjon et vous vous rendez compte que votre meilleur ami" << endl;
@@ -398,9 +401,8 @@ void histoire(unsigned int niveau) {
         cout << "Vous etes dans le donjon le plus dangereux, faites attention" << endl;
         cout << "Il faudra y sauver la princesse, mais pour cela, il faudra etre prudent" << endl;
     }
-    couleur(KReset);
     cout << "\nAppuyez sur Entrée pour continuer..." << endl;
-    
+
     cin.ignore();
     cin.get();
 
@@ -418,16 +420,18 @@ void introduction() {
     cout << "Chaque bonbon supprime rapporte deux points.\n" << endl;
     couleur(KCyan);
     cout << "Amusez-vous bien!\n" << endl;
-    couleur(KReset);
     cout << "Appuyez sur Entree pour commencer le jeu..." << endl;
     cin.ignore();
 }
 
 int main()
 {
+    srand(time(NULL));
+
     introduction();
 
     int mode;
+    couleur(KCyan);
     cout << "CHOISISSEZ LE MODE DE JEU :" << endl;
     cout << "1. Mode Solo (Infini)" << endl;
     cout << "2. Mode PvP (5 coups chacun)" << endl;
@@ -435,7 +439,7 @@ int main()
     cout << "4. Mode HARDCORE " << endl;
     cout << "Votre choix : ";
     cin >> mode;
-    
+
 
     bool estPvP = (mode == 2);
     bool modeHistoire = (mode == 3);
@@ -505,6 +509,7 @@ int main()
             cout << "Fin du mode Solo ! " << endl;
             break;
         }
+        couleur(KRouge);
         cout << "\nEntrez [Ligne] [Colonne] [Direction (AZES)]  ";
         cin >> i_abs;
         cin >> j_ord;
@@ -571,11 +576,11 @@ int main()
             tourJoueur1 = !tourJoueur1;
         }
     }
-    
+
     if (estPvP) {
         meilleurScorePvP("pvp_scores.txt", scoreJ1, scoreJ2);
     } else if (modeHistoire) {
-        meilleurScoreHistoire("histoire_scores.txt", scoreJ1);
+        meilleurScoreHistoire("histoire_scores.txt", scoreJ1, scoreJ2);
     } else if (modeHardcore) {
         meilleurScoreHardcore("hardcore_scores.txt", scoreJ1);
     } else {
