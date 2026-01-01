@@ -49,7 +49,7 @@ void initGrid(mat &grid, const size_t &matSize) {
 void modePvp (unsigned int score1, unsigned int score2, bool tourJ1, unsigned int coupsJ1, unsigned int coupsJ2) {
     couleur(KJaune); cout << " MODE PVP (5 coups chacun) " << endl;
     couleur(KRouge); cout << "J1: " << score1 << " pts (" << coupsJ1 << "/5 coups)";
-    couleur(KReset); cout << " | ";
+    couleur(KReset); cout << " VS ";
     couleur(KVert);  cout << "J2: " << score2 << " pts (" << coupsJ2 << "/5 coups)" << endl;
     couleur(KRouge);
     cout << "C'est au tour de : ";
@@ -64,24 +64,35 @@ void modePvp (unsigned int score1, unsigned int score2, bool tourJ1, unsigned in
 }
 
 
-void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int score1,unsigned int score2, bool tourJ1,unsigned int coupsJ1,unsigned int coupsJ2, bool histoire, unsigned int niveau, unsigned objectif, bool hardcore, int coupsRestants) {
+void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int score1,unsigned int score2, bool tourJ1,unsigned int coupsJ1,unsigned int coupsJ2, bool histoire, unsigned int niveau, unsigned objectif, bool hardcore, int coupsRestants, bool modeVide) {
     clearScreen ();
 
     if (pvp) {
         modePvp(score1, score2, tourJ1, coupsJ1, coupsJ2);
-    } else if (histoire) {
+    }
+
+    else if (modeVide) {
+        couleur(KCyan); cout << " MODE VIDE  " << endl;
+        couleur(KRouge); cout << "Score : " << score1 << " | Q pour quitter" << endl;
+    }
+
+    else if (histoire) {
         couleur(KMAgenta); cout << " MODE HISTOIRE - Niveau " << niveau << endl;
                            cout << "Score : " << score1 << " / ";
         couleur(KVert); cout << objectif << " points requis";
         couleur(KRouge); cout << " | [Ligne] [Colonne] Q pour quitter " << endl;
         couleur(KReset);
-    } else if (hardcore) {
+    }
+
+    else if (hardcore) {
         couleur(KRouge); cout << "  MODE HARDCORE  " << endl;
         cout << "Objectif : 80 points | ";
         couleur(KRouge); cout << "Coups restants : " << coupsRestants << endl;
         cout << "Score actuel : " << score1 << endl;
         couleur(KReset);
-    } else {
+    }
+
+    else {
         couleur(KCyan); cout << " MODE SOLO (INFINI) " << endl;
         couleur(KRouge); cout << "Score actuel : " << score1 << " | [Ligne] [Colonne] Q pour quitter " << endl;
         couleur(KReset);
@@ -92,6 +103,9 @@ void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int 
 
         for (size_t j = 0; j < matSize; j++) {
             switch (grid[i][j]) {
+            case 0: couleur(KNoir);
+                break;
+
             case 1: couleur(KRouge);
                 break;
 
@@ -209,44 +223,48 @@ bool atLeastThreeInARow (const mat & grid, maPosition & pos, unsigned & howMany)
     return false;
 }
 
-void removalInColumn (mat & grid, const maPosition & pos, unsigned howMany) {
-    const unsigned KImpossible = 0;
+
+void removalInColumn (mat & grid, const maPosition & pos, unsigned howMany, bool remplir = true) {
     unsigned ligne = pos.abs;
     unsigned colonne = pos.ord;
     size_t matSize = grid.size();
 
-    for (size_t i = ligne + howMany; i < matSize; ++i) {
+    for (unsigned int i = ligne + howMany; i < matSize; ++i) {
         grid[i - howMany][colonne] = grid[i][colonne];
     }
-    for (size_t i = matSize - howMany; i < matSize; ++i) {
+
+    for (unsigned int i = matSize - howMany; i < matSize; ++i) {
         grid[i][colonne] = KImpossible;
     }
-    for (size_t i = 0; i < matSize; ++i) {
-        if (grid[i][colonne] == KImpossible) {
-            grid[i][colonne] = rand() % KNbCandies + 1;
+
+    if (remplir) {
+        for (unsigned int i = 0; i < matSize; ++i) {
+            if (grid[i][colonne] == KImpossible) {
+                grid[i][colonne] = rand() % KNbCandies + 1;
+            }
         }
     }
 }
 
-void removalInRow(mat & grid, const maPosition & pos, unsigned howMany) {
-    const unsigned KImpossible = 0;
-    for (size_t j = pos.ord; j < pos.ord + howMany; ++j) {
-        grid[pos.abs][j] = KImpossible;
-    }
-    for (size_t j = pos.ord; j < pos.ord + howMany; ++j) {
-        for (size_t i = pos.abs; i > 0; --i) {
-            if (grid[i][j] == KImpossible) {
-                for (size_t k = i; k > 0; --k) {
-                    grid[k][j] = grid[k-1][j];
-                }
-                grid[0][j] = KImpossible;
-            }
+void removalInRow(mat & grid, const maPosition & pos, unsigned howMany, bool remplir = true) {
+    size_t matSize = grid.size();
+    for (unsigned int j = pos.ord; j < pos.ord + howMany; ++j) {
+        for (int i = pos.abs; i > 0; --i) {
+            grid[i][j] = grid[i-1][j];
         }
-        if (grid[0][j] == KImpossible) {
-            grid[0][j] = rand() % KNbCandies + 1;
+        grid[0][j] = KImpossible;
+
+        if (remplir) {
+            for (unsigned int i = 0; i < matSize; ++i) {
+                if (grid[i][j] == KImpossible) {
+                    grid[i][j] = rand() % KNbCandies + 1;
+                }
+            }
         }
     }
 }
+
+
 
 void meilleurScorePvP(const string & nomFichier, unsigned score1, unsigned score2) {
 
@@ -437,6 +455,7 @@ int main()
     cout << "2. Mode PvP (5 coups chacun)" << endl;
     cout << "3. Mode Histoire (3 Niveaux)" << endl;
     cout << "4. Mode HARDCORE " << endl;
+    cout << "5. Mode VIDE (Casali)" << endl;
     cout << "Votre choix : ";
     cin >> mode;
 
@@ -444,6 +463,10 @@ int main()
     bool estPvP = (mode == 2);
     bool modeHistoire = (mode == 3);
     bool modeHardcore = (mode == 4);
+    bool modeVide = (mode == 5);
+
+
+
 
     unsigned int scoreJ1 = 0;
     unsigned int scoreJ2 = 0;
@@ -481,7 +504,7 @@ int main()
             objectif = objectifScore(niveau);
         }
 
-        displayGrid(mat_grille, t_grille, estPvP, scoreJ1, scoreJ2, tourJoueur1, coupsJ1, coupsJ2, modeHistoire, niveau, objectif, modeHardcore, coupsRestantsHardcore);
+        displayGrid(mat_grille, t_grille, estPvP, scoreJ1, scoreJ2, tourJoueur1, coupsJ1, coupsJ2, modeHistoire, niveau, objectif, modeHardcore, coupsRestantsHardcore, modeVide);
 
 
         if (estPvP && coupsJ1 >= 5 && coupsJ2 >= 5) {
@@ -505,7 +528,7 @@ int main()
             break;
         }
 
-        if (mode == 1 && direction == 'Q') {
+        if ((mode == 1 || mode == 5) && direction == 'Q') {
             cout << "Fin du mode Solo ! " << endl;
             break;
         }
@@ -533,7 +556,7 @@ int main()
         do {
             encore = false;
             if (atLeastThreeInAColumn(mat_grille, pos_bonbons, nb_bonbons_sup)) {
-                removalInColumn(mat_grille, pos_bonbons, nb_bonbons_sup);
+                removalInColumn(mat_grille, pos_bonbons, nb_bonbons_sup, !modeVide);
                 if (tourJoueur1)
                     scoreJ1 += nb_bonbons_sup * 2;
                 else
@@ -542,7 +565,7 @@ int main()
                 cout << "\n Il y a  " << nb_bonbons_sup << "  bonbons supprimes. \n";
                 encore = true;
             } else if (atLeastThreeInARow(mat_grille, pos_bonbons, nb_bonbons_sup)) {
-                removalInRow(mat_grille, pos_bonbons, nb_bonbons_sup);
+                removalInRow(mat_grille, pos_bonbons, nb_bonbons_sup, !modeVide);
 
                 if (tourJoueur1)
                     scoreJ1 += nb_bonbons_sup * 2;
@@ -580,7 +603,7 @@ int main()
     if (estPvP) {
         meilleurScorePvP("pvp_scores.txt", scoreJ1, scoreJ2);
     } else if (modeHistoire) {
-        meilleurScoreHistoire("histoire_scores.txt", scoreJ1, scoreJ2);
+        meilleurScoreHistoire("histoire_scores.txt", scoreJ1, niveau);
     } else if (modeHardcore) {
         meilleurScoreHardcore("hardcore_scores.txt", scoreJ1);
     } else {
