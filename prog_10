@@ -575,7 +575,7 @@ int main()
     if (estPvP) {
         meilleurScorePvP("pvp_scores.txt", scoreJ1, scoreJ2);
     } else if (modeHistoire) {
-        meilleurScoreHistoire("histoire_scores.txt", scoreJ1);
+        meilleurScoreHistoire("histoire_scores.txt", scoreJ1, niveau);
     } else if (modeHardcore) {
         meilleurScoreHardcore("hardcore_scores.txt", scoreJ1);
     } else {
