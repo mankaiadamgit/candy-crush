@@ -1,0 +1,10 @@
+<map id="KRouge" name="KRouge">
+<area shape="rect" id="Node000001" title=" " alt="" coords="276,22,344,48"/>
+<area shape="rect" id="Node000002" href="$main_8cpp.html#a40d028109c83deb99518379b95210f39" title=" " alt="" coords="5,22,92,48"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="258,18,228,12,184,8,140,12,91,24,89,19,139,7,184,3,228,7,264,17"/>
+<area shape="rect" id="Node000004" href="$main_8cpp.html#af70831f77e53f25f784124a37f7e7c5e" title=" " alt="" coords="140,22,228,48"/>
+<area shape="poly" id="edge2_Node000001_Node000004" title=" " alt="" coords="258,35,229,38,228,32,263,35"/>
+<area shape="rect" id="Node000005" href="$main_8cpp.html#a326ec5fc911d1688f32d0dabab685a16" title=" " alt="" coords="146,72,222,99"/>
+<area shape="poly" id="edge3_Node000001_Node000005" title=" " alt="" coords="264,54,220,74,218,69,259,55"/>
+<area shape="poly" id="edge4_Node000005_Node000002" title=" " alt="" coords="129,67,86,52,87,46,134,65"/>
+</map>

@@ -73,7 +73,7 @@ void displayGrid(const mat &grid, const size_t &matSize, bool pvp, unsigned int 
 
     else if (modeVide) {
         couleur(KCyan); cout << " MODE VIDE  " << endl;
-        couleur(KRouge); cout << "Score : " << score1 << " | Q pour quitter" << endl;
+        couleur(KRouge); cout << "Score : " << score1 << " [ligne] [colonne] | Q pour quitter" << endl;
     }
 
     else if (histoire) {
@@ -349,6 +349,23 @@ void meilleurScoreHistoire(const string & nomFichier, unsigned scorePartie, unsi
     cout << "Meilleur Score Histoire actuel : " << meilleurScore << " (Niveau " << meilleurNiveau << " )" << endl;
 }
 
+void meilleurScoreVide(const string & nomFichier, unsigned scorePartie) {
+    unsigned meilleurScore = 0;
+
+    ifstream fichierLecture(nomFichier);
+    if (fichierLecture) {
+        fichierLecture >> meilleurScore;
+    }
+
+    if (scorePartie > meilleurScore) {
+        ofstream fichierEcriture(nomFichier);
+        fichierEcriture << scorePartie;
+        cout << "Nouveau Meilleur Score Vide : " << scorePartie << " ! " << endl;
+    } else {
+        cout << "Meilleur Score Vide actuel : " << meilleurScore << endl;
+    }
+}
+
 void niveau1(mat & grille, size_t & taille) {
     taille = 5;
     grille = {
@@ -606,7 +623,9 @@ int main()
         meilleurScoreHistoire("histoire_scores.txt", scoreJ1, niveau);
     } else if (modeHardcore) {
         meilleurScoreHardcore("hardcore_scores.txt", scoreJ1);
-    } else {
+    } else if (modeVide) {
+        meilleurScoreVide("vide_scores.txt", scoreJ1);
+    } else{
         meilleurScoreInfini("infini_scores.txt", scoreJ1);
     }
 
