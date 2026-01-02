@@ -595,8 +595,10 @@ int main()
             } else {
                 scoreJ1 = 0;
                 histoire(niveau);
-                if (niveau == 2) niveau2(mat_grille, t_grille);
-                else if (niveau == 3) niveau3(mat_grille, t_grille);
+                if (niveau == 2)
+                    niveau2(mat_grille, t_grille);
+                else if (niveau == 3)
+                    niveau3(mat_grille, t_grille);
             }
             continue;
         }
