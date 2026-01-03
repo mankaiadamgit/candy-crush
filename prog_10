@@ -33,7 +33,7 @@ struct maPosition {
     unsigned ord;
 };
 
-int KNbCandies = 6;
+int KNbCandies = 7;
 
 void initGrid(mat &grid, const size_t &matSize) {
     grid.resize(matSize);
@@ -176,13 +176,13 @@ void makeAMove (mat & grid, const maPosition & pos, const char & direction) {
 
 bool atLeastThreeInAColumn (const mat & grid, maPosition & pos, unsigned & howMany) {
     size_t matSize = grid.size();
-    for (size_t j = 0; j < matSize; ++j) {
-        for (size_t i = 0; i < matSize - 2; ++i) {
+    for (unsigned int j = 0; j < matSize; ++j) {
+        for (unsigned int i = 0; i < matSize - 2; ++i) {
             unsigned val = grid[i][j];
 
             if (val != KImpossible && grid[i + 1][j] == val && grid[i + 2][j] == val) {
                 unsigned compteur = 3;
-                for (size_t k = i + 3; k < matSize; ++k) {
+                for (unsigned int k = i + 3; k < matSize; ++k) {
                     if (grid[k][j] == val) {
                         compteur++;
                     } else {
@@ -282,7 +282,7 @@ void meilleurScorePvP(const string & nomFichier, unsigned score1, unsigned score
     } else {
         ofstream fichierEcriture(nomFichier);
         fichierEcriture << meilleurPartie;
-        cout << "Nouveau Score PvP : " << meilleurPartie << endl;
+        cout << "Nouveau Meilleur Score PvP : " << meilleurPartie << endl;
     }
 }
 
@@ -472,7 +472,7 @@ int main()
     cout << "2. Mode PvP (5 coups chacun)" << endl;
     cout << "3. Mode Histoire (3 Niveaux)" << endl;
     cout << "4. Mode HARDCORE " << endl;
-    cout << "5. Mode VIDE (Casali)" << endl;
+    cout << "5. Mode VIDE" << endl;
     cout << "Votre choix : ";
     cin >> mode;
 
@@ -545,10 +545,17 @@ int main()
             break;
         }
 
-        if ((mode == 1 || mode == 5) && direction == 'Q') {
+        if ((mode == 1 && direction == 'Q')) {
             cout << "Fin du mode Solo ! " << endl;
             break;
         }
+
+
+        if (( mode == 5 && direction == 'Q')) {
+            cout << "Fin du mode Vide! " << endl;
+            break;
+        }
+
         couleur(KRouge);
         cout << "\nEntrez [Ligne] [Colonne] [Direction (AZES)]  ";
         cin >> i_abs;
@@ -579,7 +586,7 @@ int main()
                 else
                     scoreJ2 += nb_bonbons_sup * 2;
 
-                cout << "\n Il y a  " << nb_bonbons_sup << "  bonbons supprimes. \n";
+                cout << "Il y a  " << nb_bonbons_sup << "  bonbons supprimes. ";
                 encore = true;
             } else if (atLeastThreeInARow(mat_grille, pos_bonbons, nb_bonbons_sup)) {
                 removalInRow(mat_grille, pos_bonbons, nb_bonbons_sup, !modeVide);
@@ -605,8 +612,10 @@ int main()
             } else {
                 scoreJ1 = 0;
                 histoire(niveau);
-                if (niveau == 2) niveau2(mat_grille, t_grille);
-                else if (niveau == 3) niveau3(mat_grille, t_grille);
+                if (niveau == 2)
+                    niveau2(mat_grille, t_grille);
+                else if (niveau == 3)
+                    niveau3(mat_grille, t_grille);
             }
             continue;
         }
