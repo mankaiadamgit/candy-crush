@@ -282,7 +282,7 @@ void meilleurScorePvP(const string & nomFichier, unsigned score1, unsigned score
     } else {
         ofstream fichierEcriture(nomFichier);
         fichierEcriture << meilleurPartie;
-        cout << "Nouveau Score PvP : " << meilleurPartie << endl;
+        cout << "Nouveau Meilleur Score PvP : " << meilleurPartie << endl;
     }
 }
 
