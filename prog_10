@@ -267,8 +267,8 @@ void removalInRow(mat & grid, const maPosition & pos, unsigned howMany, bool rem
 
 
 void meilleurScorePvP(const string & nomFichier, unsigned score1, unsigned score2) {
-
     unsigned meilleurPartie;
+    
     if (score1 > score2) {
         meilleurPartie = score1;
     } else {
